@@ -2,6 +2,8 @@ import { Box, Tab, Tabs } from '@mui/material'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import type { SyntheticEvent } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCogs, faBook, faLightbulb, faDatabase } from '@fortawesome/free-solid-svg-icons'
 import Footer from './regions/Footer'
 import Header from './regions/Header'
 import Corpora from './views/Corpora'
@@ -22,10 +24,10 @@ function UserTabLayout() {
   const navigate = useNavigate()
 
   const tabRoutes = [
-    { label: 'Systems', path: '/systems' },
-    { label: 'Vocabules', path: '/vocabules' },
-    { label: 'Examples', path: '/examples' },
-    { label: 'Corpora', path: '/corpora' },
+    { label: 'Systems', path: '/systems', icon: faCogs },
+    { label: 'Vocabules', path: '/vocabules', icon: faBook },
+    { label: 'Examples', path: '/examples', icon: faLightbulb },
+    { label: 'Corpora', path: '/corpora', icon: faDatabase },
   ]
 
   const currentTab = tabRoutes.findIndex((tab) => location.pathname === tab.path)
@@ -39,7 +41,15 @@ function UserTabLayout() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={currentTab === -1 ? 0 : currentTab} onChange={handleTabChange}>
           {tabRoutes.map((tab) => (
-            <Tab key={tab.path} label={tab.label} />
+            <Tab
+              key={tab.path}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <FontAwesomeIcon icon={tab.icon} />
+                  {tab.label}
+                </Box>
+              }
+            />
           ))}
         </Tabs>
       </Box>
