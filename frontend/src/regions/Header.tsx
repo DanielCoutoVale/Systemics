@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Divider, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 
 type HeaderProps = {
   userState: 'guest' | 'user'
@@ -7,36 +7,94 @@ type HeaderProps = {
   onSignIn?: () => void
 }
 
+type TopMenuKey = 'file' | 'edit' | 'view' | 'go'
+
+const menuConfig: Array<{
+  key: TopMenuKey
+  label: string
+  options: Array<{ label: string; divider?: boolean }>
+}> = [
+  {
+    key: 'file',
+    label: 'File',
+    options: [
+      { label: 'New...' },
+      { label: 'Open...' },
+      { label: 'Import...' },
+      { divider: true, label: 'divider' },
+      { label: 'Close' },
+      { label: 'Save' },
+      { label: 'Duplicate' },
+      { label: 'Rename' },
+      { label: 'Move...' },
+      { divider: true, label: 'divider' },
+      { label: 'Export' },
+      { label: 'Publish' },
+      { divider: true, label: 'divider' },
+      { label: 'Delete' },
+    ],
+  },
+  {
+    key: 'edit',
+    label: 'Edit',
+    options: [
+      { label: 'Undo' },
+      { label: 'Redo' },
+      { divider: true, label: 'divider' },
+      { label: 'Cut' },
+      { label: 'Copy' },
+      { label: 'Paste' },
+      { label: 'Delete' },
+      { divider: true, label: 'divider' },
+      { label: 'Select All' },
+      { label: 'Find...' },
+      { label: 'Replace...' },
+    ],
+  },
+  {
+    key: 'view',
+    label: 'View',
+    options: [
+      { label: 'Reload' },
+      { label: 'Toggle Full Screen' },
+      { divider: true, label: 'divider' },
+      { label: 'Show Sidebar' },
+      { label: 'Show Status Bar' },
+      { divider: true, label: 'divider' },
+      { label: 'Zoom In' },
+      { label: 'Zoom Out' },
+      { label: 'Actual Size' },
+    ],
+  },
+  {
+    key: 'go',
+    label: 'Go',
+    options: [
+      { label: 'Back' },
+      { label: 'Forward' },
+      { divider: true, label: 'divider' },
+      { label: 'Home' },
+      { label: 'Recent' },
+      { label: 'Search' },
+    ],
+  },
+]
+
 export default function Header({ userState, onSignOut, onSignIn }: HeaderProps) {
-  const [fileAnchorEl, setFileAnchorEl] = useState<null | HTMLElement>(null)
-  const [latestAnchorEl, setLatestAnchorEl] = useState<null | HTMLElement>(null)
-  const [revertAnchorEl, setRevertAnchorEl] = useState<null | HTMLElement>(null)
-  const [editAnchorEl, setEditAnchorEl] = useState<null | HTMLElement>(null)
-  const [viewAnchorEl, setViewAnchorEl] = useState<null | HTMLElement>(null)
-  const [goAnchorEl, setGoAnchorEl] = useState<null | HTMLElement>(null)
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+  const [activeMenu, setActiveMenu] = useState<TopMenuKey | null>(null)
 
-  const openFileMenu = Boolean(fileAnchorEl)
-  const openLatestMenu = Boolean(latestAnchorEl)
-  const openRevertMenu = Boolean(revertAnchorEl)
-  const openEditMenu = Boolean(editAnchorEl)
-  const openViewMenu = Boolean(viewAnchorEl)
-  const openGoMenu = Boolean(goAnchorEl)
+  const openMenu = Boolean(menuAnchor) && activeMenu !== null
 
-  const handleOpenFileMenu = (event: React.MouseEvent<HTMLElement>) => setFileAnchorEl(event.currentTarget)
-  const handleCloseMenus = () => {
-    setFileAnchorEl(null)
-    setLatestAnchorEl(null)
-    setRevertAnchorEl(null)
-    setEditAnchorEl(null)
-    setViewAnchorEl(null)
-    setGoAnchorEl(null)
+  const handleOpenMenu = (menu: TopMenuKey) => (event: MouseEvent<HTMLElement>) => {
+    setMenuAnchor(event.currentTarget)
+    setActiveMenu(menu)
   }
 
-  const handleOpenLatestMenu = (event: React.MouseEvent<HTMLElement>) => setLatestAnchorEl(event.currentTarget)
-  const handleOpenRevertMenu = (event: React.MouseEvent<HTMLElement>) => setRevertAnchorEl(event.currentTarget)
-  const handleOpenEditMenu = (event: React.MouseEvent<HTMLElement>) => setEditAnchorEl(event.currentTarget)
-  const handleOpenViewMenu = (event: React.MouseEvent<HTMLElement>) => setViewAnchorEl(event.currentTarget)
-  const handleOpenGoMenu = (event: React.MouseEvent<HTMLElement>) => setGoAnchorEl(event.currentTarget)
+  const handleCloseMenus = () => {
+    setMenuAnchor(null)
+    setActiveMenu(null)
+  }
 
   return (
     <AppBar position="static" color="primary" elevation={2}>
@@ -45,82 +103,42 @@ export default function Header({ userState, onSignOut, onSignIn }: HeaderProps) 
           Systemics
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flex: 1 }}>
+        <Box component="nav" sx={{ display: 'flex', gap: 1, alignItems: 'center', flex: 1 }}>
           {userState === 'user' && (
             <>
-              <Button color="inherit" size="small" onClick={handleOpenFileMenu}>
-                File
-              </Button>
-          <Menu anchorEl={fileAnchorEl} open={openFileMenu} onClose={handleCloseMenus}>
-            <MenuItem onClick={handleCloseMenus}>New...</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Open...</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Import...</MenuItem>
-            <MenuItem onClick={handleOpenLatestMenu}>Latest</MenuItem>
-            <Menu anchorEl={latestAnchorEl} open={openLatestMenu} onClose={() => setLatestAnchorEl(null)} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }}>
-              <MenuItem onClick={handleCloseMenus}>Latest item 1</MenuItem>
-              <MenuItem onClick={handleCloseMenus}>Latest item 2</MenuItem>
-            </Menu>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Close</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Save</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Duplicate</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Rename</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Move...</MenuItem>
-            <MenuItem onClick={handleOpenRevertMenu}>Revert to</MenuItem>
-            <Menu anchorEl={revertAnchorEl} open={openRevertMenu} onClose={() => setRevertAnchorEl(null)} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }}>
-              <MenuItem onClick={handleCloseMenus}>Last saved</MenuItem>
-              <MenuItem onClick={handleCloseMenus}>Previous version</MenuItem>
-            </Menu>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Export</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Publish</MenuItem>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Delete</MenuItem>
-          </Menu>
+              {menuConfig.map((menu) => (
+                <Button
+                  key={menu.key}
+                  color="inherit"
+                  size="small"
+                  onClick={handleOpenMenu(menu.key)}
+                  sx={{ textTransform: 'none', fontWeight: 600, minWidth: 72, px: 1.5 }}
+                >
+                  {menu.label}
+                </Button>
+              ))}
 
-          <Button color="inherit" size="small" onClick={handleOpenEditMenu}>
-            Edit
-          </Button>
-          <Menu anchorEl={editAnchorEl} open={openEditMenu} onClose={handleCloseMenus}>
-            <MenuItem onClick={handleCloseMenus}>Undo</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Redo</MenuItem>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Cut</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Copy</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Paste</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Delete</MenuItem>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Select All</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Find...</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Replace...</MenuItem>
-          </Menu>
-
-          <Button color="inherit" size="small" onClick={handleOpenViewMenu}>
-            View
-          </Button>
-          <Menu anchorEl={viewAnchorEl} open={openViewMenu} onClose={handleCloseMenus}>
-            <MenuItem onClick={handleCloseMenus}>Reload</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Toggle Full Screen</MenuItem>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Show Sidebar</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Show Status Bar</MenuItem>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Zoom In</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Zoom Out</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Actual Size</MenuItem>
-          </Menu>
-
-          <Button color="inherit" size="small" onClick={handleOpenGoMenu}>
-            Go
-          </Button>
-          <Menu anchorEl={goAnchorEl} open={openGoMenu} onClose={handleCloseMenus}>
-            <MenuItem onClick={handleCloseMenus}>Back</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Forward</MenuItem>
-            <Divider />
-            <MenuItem onClick={handleCloseMenus}>Home</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Recent</MenuItem>
-            <MenuItem onClick={handleCloseMenus}>Search</MenuItem>
-          </Menu>
+              {menuConfig.map((menu) => (
+                <Menu
+                  key={menu.key}
+                  anchorEl={menuAnchor}
+                  open={openMenu && activeMenu === menu.key}
+                  onClose={handleCloseMenus}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                  MenuListProps={{ 'aria-labelledby': `${menu.key}-button` }}
+                >
+                  {menu.options.map((option, index) =>
+                    option.divider ? (
+                      <Divider key={`divider-${menu.key}-${index}`} />
+                    ) : (
+                      <MenuItem key={option.label} onClick={handleCloseMenus}>
+                        {option.label}
+                      </MenuItem>
+                    ),
+                  )}
+                </Menu>
+              ))}
             </>
           )}
         </Box>

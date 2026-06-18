@@ -22,7 +22,7 @@ const systemsDto = new SystemsDto(1, 'Systemics', 'TypeScript', [
     1,
     'WeatherSystem.ts',
     'Weather system for forecast logic',
-    '/platform/meteorology/forecast',
+    '/forecast',
     'forecastEngine',
     {
       expressions: [
@@ -40,7 +40,7 @@ const systemsDto = new SystemsDto(1, 'Systemics', 'TypeScript', [
     2,
     'TradeSystem.ts',
     'Commerce system for order processing',
-    '/platform/commerce/orders',
+    '/orders',
     'tradeEngine',
     {
       expressions: [
@@ -58,7 +58,7 @@ const systemsDto = new SystemsDto(1, 'Systemics', 'TypeScript', [
     3,
     'ChatSystem.ts',
     'Communication system for messaging flows',
-    '/platform/communication/messages',
+    '/messages',
     'chatEngine',
     {
       expressions: [
@@ -164,14 +164,12 @@ export function SystemsAside({ onSystemSelect }: { onSystemSelect: (systemId: st
         flexDirection: 'column',
         bgcolor: '#0f172a',
         color: 'common.white',
+        textAlign: 'left'
       }}
     >
       <Box sx={{ px: 3, py: 2, borderBottom: 1, borderColor: 'divider', bgcolor: 'rgba(15, 23, 42, 0.95)' }}>
         <Typography variant="h6" sx={{ color: 'common.white' }}>
-          Explorer
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
-          Files and systems by region path.
+          Systems by Region
         </Typography>
       </Box>
       <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
