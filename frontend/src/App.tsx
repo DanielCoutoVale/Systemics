@@ -64,7 +64,7 @@ function AppRoutes() {
 
   return (
     <>
-      <Header userState={userState} onSignOut={handleSignOut} />
+      <Header userState={userState} onSignOut={handleSignOut} onSignIn={() => navigate('/signin')} />
 
       <Box component="main" sx={{ minHeight: 'calc(100vh - 160px)' }}>
         <Routes>
