@@ -174,7 +174,23 @@ export function SystemsAside({ onSystemSelect }: { onSystemSelect: (systemId: st
       </Box>
       <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
         <TreeView defaultCollapseIcon="-" defaultExpandIcon="+" onNodeSelect={handleNodeSelect} sx={{ '& .MuiTreeItem-root': { color: 'common.white' } }}>
-          {renderRegionNode(regionTree)}
+          {Object.values(regionTree.children).map((child) => renderRegionNode(child))}
+          {regionTree.systems.map((system) => (
+            <TreeItem
+              key={system.id}
+              nodeId={String(system.id)}
+              label={
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography component="span" sx={{ color: '#f8fafc', fontWeight: 500 }}>
+                    📄 {system.name}
+                  </Typography>
+                  <Typography component="span" sx={{ color: '#94a3b8', fontSize: '0.78rem' }}>
+                    {(system.inputs as SystemInput).expressions.length} expressions · {system.outputs.length} features
+                  </Typography>
+                </Box>
+              }
+            />
+          ))}
         </TreeView>
       </Box>
     </Paper>
