@@ -1,5 +1,7 @@
-import { Box } from '@mui/material'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Box, Tab, Tabs } from '@mui/material'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import type { SyntheticEvent } from 'react'
 import Footer from './regions/Footer'
 import Header from './regions/Header'
 import Corpora from './views/Corpora'
@@ -9,24 +11,96 @@ import SignIn from './views/SignIn'
 import Systems from './views/Systems'
 import Vocabules from './views/Vocabules'
 
-function App() {
+type AuthState = 'guest' | 'user'
+
+function RequireAuthenticated({ userState }: { userState: AuthState }) {
+  return userState === 'user' ? <Outlet /> : <Navigate replace to="/" />
+}
+
+function UserTabLayout() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const tabRoutes = [
+    { label: 'Systems', path: '/systems' },
+    { label: 'Vocabules', path: '/vocabules' },
+    { label: 'Examples', path: '/examples' },
+    { label: 'Corpora', path: '/corpora' },
+  ]
+
+  const currentTab = tabRoutes.findIndex((tab) => location.pathname === tab.path)
+
+  const handleTabChange = (_event: SyntheticEvent, newValue: number) => {
+    navigate(tabRoutes[newValue].path)
+  }
+
   return (
-    <BrowserRouter>
-      <Header />
+    <Box sx={{ width: '100%', pt: 4 }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs value={currentTab === -1 ? 0 : currentTab} onChange={handleTabChange}>
+          {tabRoutes.map((tab) => (
+            <Tab key={tab.path} label={tab.label} />
+          ))}
+        </Tabs>
+      </Box>
+      <Outlet />
+    </Box>
+  )
+}
+
+function AppRoutes() {
+  const [userState, setUserState] = useState<AuthState>('guest')
+  const navigate = useNavigate()
+
+  const handleSignIn = () => {
+    setUserState('user')
+    navigate('/systems')
+  }
+
+  const handleSignOut = () => {
+    setUserState('guest')
+    navigate('/')
+  }
+
+  return (
+    <>
+      <Header userState={userState} onSignOut={handleSignOut} />
 
       <Box component="main" sx={{ minHeight: 'calc(100vh - 160px)' }}>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/systems" element={<Systems />} />
-          <Route path="/vocabules" element={<Vocabules />} />
-          <Route path="/examples" element={<Examples />} />
-          <Route path="/corpora" element={<Corpora />} />
-          <Route path="*" element={<Navigate replace to="/" />} />
+          <Route path="/" element={userState === 'guest' ? <Home onSignIn={() => navigate('/signin')} /> : <Navigate replace to="/systems" />} />
+          <Route
+            path="/signin"
+            element={
+              userState === 'guest' ? (
+                <SignIn onContinue={handleSignIn} onCancel={() => navigate('/')} />
+              ) : (
+                <Navigate replace to="/systems" />
+              )
+            }
+          />
+
+          <Route element={<RequireAuthenticated userState={userState} />}>
+            <Route element={<UserTabLayout />}>
+              <Route path="/systems" element={<Systems />} />
+              <Route path="/vocabules" element={<Vocabules />} />
+              <Route path="/examples" element={<Examples />} />
+              <Route path="/corpora" element={<Corpora />} />
+            </Route>
+          </Route>
+
+          <Route path="*" element={<Navigate replace to={userState === 'guest' ? '/' : '/systems'} />} />
         </Routes>
       </Box>
-
       <Footer />
+    </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   )
 }
