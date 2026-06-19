@@ -4,6 +4,7 @@ const multer = require('multer')
 const AdmZip = require('adm-zip')
 const fs = require('fs')
 const path = require('path')
+const { randomUUID } = require('crypto')
 
 const app = express()
 const upload = multer({ storage: multer.memoryStorage() })
@@ -44,6 +45,14 @@ function unzipJsonBuffer(buffer) {
   const entry = zip.getEntries().find((e) => e.entryName.endsWith('.json'))
   if (!entry) return null
   return JSON.parse(entry.getData().toString('utf8'))
+}
+
+function generateUniqueId() {
+  let id = randomUUID()
+  while (fs.existsSync(getResourceFile(id))) {
+    id = randomUUID()
+  }
+  return id
 }
 
 app.get('/resources', (_req, res) => {
@@ -90,13 +99,14 @@ app.post('/resources', upload.single('file'), (req, res) => {
     resource = parsed
   }
 
-
-
   if (!resource) {
     return res.status(400).json({ message: 'Request body must be valid JSON or ZIP with JSON file' })
   }
 
-  const id = resource.id || resource.grammarId || `${Date.now()}`
+  let id = resource.id || resource.grammarId || generateUniqueId()
+  while (!fs.existsSync(getResourceFile(id))) {
+    id = generateUniqueId()
+  }
   resource.id = id
   saveResourceData(id, resource)
   res.status(201).json(resource)
