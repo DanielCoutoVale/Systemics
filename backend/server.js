@@ -8,7 +8,7 @@ const { randomUUID } = require('crypto')
 
 const app = express()
 const upload = multer({ storage: multer.memoryStorage() })
-const PORT = 3000
+const PORT = 3001
 const storagePath = path.join(__dirname, 'data')
 
 if (!fs.existsSync(storagePath)) {
@@ -104,7 +104,7 @@ app.post('/resources', upload.single('file'), (req, res) => {
   }
 
   let id = resource.id || resource.grammarId || generateUniqueId()
-  while (!fs.existsSync(getResourceFile(id))) {
+  while (fs.existsSync(getResourceFile(id))) {
     id = generateUniqueId()
   }
   resource.id = id

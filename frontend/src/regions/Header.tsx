@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, Button, Divider, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { AppBar, Avatar, Box, Button, Divider, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, TextField, Toolbar, Typography } from '@mui/material'
 import { useState, type MouseEvent } from 'react'
 
 type HeaderProps = {
@@ -85,6 +85,11 @@ const menuConfig: Array<{
 export default function Header({ userState, onSignOut, onSignIn, userName, userPhotoUrl }: HeaderProps) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [activeMenu, setActiveMenu] = useState<TopMenuKey | null>(null)
+  const [newDialogOpen, setNewDialogOpen] = useState(false)
+  const [languageName, setLanguageName] = useState('')
+  const [modelName, setModelName] = useState('')
+  const [modelVersion, setModelVersion] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const openMenu = Boolean(menuAnchor) && activeMenu !== null
 
@@ -98,7 +103,52 @@ export default function Header({ userState, onSignOut, onSignIn, userName, userP
     setActiveMenu(null)
   }
 
+  const handleMenuOptionClick = (label: string) => {
+    handleCloseMenus()
+    if (label === 'New...') {
+      setLanguageName('')
+      setModelName('')
+      setModelVersion('')
+      setNewDialogOpen(true)
+    }
+  }
+
+  const createResource = async () => {
+    setCreating(true)
+    try {
+      const payload = {
+        languageName: languageName || '',
+        modelName: modelName || '',
+        modelVersion: modelVersion || '',
+        systems: [],
+        vocabules: [],
+        examples: [],
+        corpora: [],
+      }
+
+      const res = await fetch('http://localhost:3000/resources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText }))
+        throw new Error(err.message || 'Failed to create resource')
+      }
+
+      const data = await res.json()
+      setNewDialogOpen(false)
+      alert(`Resource created: ${data.id}`)
+    } catch (e: any) {
+      alert(`Create failed: ${e.message ?? e}`)
+    } finally {
+      setCreating(false)
+    }
+  }
+
   return (
+    <>
     <AppBar position="static" sx={{ backgroundColor: '#1976d2' }} elevation={2}>
       <Toolbar sx={{ justifyContent: 'space-between', gap: 2 }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
@@ -156,7 +206,7 @@ export default function Header({ userState, onSignOut, onSignIn, userName, userP
                 option.divider ? (
                   <Divider key={`divider-${menu.key}-${index}`} />
                 ) : (
-                  <MenuItem key={option.label} onClick={handleCloseMenus}>
+                  <MenuItem key={option.label} onClick={() => handleMenuOptionClick(option.label)}>
                     {option.label}
                   </MenuItem>
                 ),
@@ -166,5 +216,22 @@ export default function Header({ userState, onSignOut, onSignIn, userName, userP
         </Toolbar>
       )}
     </AppBar>
+    <Dialog open={newDialogOpen} onClose={() => setNewDialogOpen(false)} maxWidth="xs" fullWidth>
+      <DialogTitle>Create Resource</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField label="Language Name" value={languageName} onChange={(e) => setLanguageName(e.target.value)} fullWidth />
+          <TextField label="Model Name" value={modelName} onChange={(e) => setModelName(e.target.value)} fullWidth />
+          <TextField label="Model Version" value={modelVersion} onChange={(e) => setModelVersion(e.target.value)} fullWidth />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setNewDialogOpen(false)} disabled={creating}>Cancel</Button>
+        <Button onClick={createResource} variant="contained" disabled={creating || (!languageName && !modelName && !modelVersion)}>
+          Create resource
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   )
 }
