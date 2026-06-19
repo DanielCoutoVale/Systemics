@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, Button, Divider, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, TextField, Toolbar, Typography } from '@mui/material'
+import { AppBar, Avatar, Box, Button, Divider, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItemButton, ListItemText, Menu, MenuItem, TextField, Toolbar, Typography } from '@mui/material'
 import { useState, type MouseEvent } from 'react'
 
 type HeaderProps = {
@@ -90,6 +90,11 @@ export default function Header({ userState, onSignOut, onSignIn, userName, userP
   const [modelName, setModelName] = useState('')
   const [modelVersion, setModelVersion] = useState('')
   const [creating, setCreating] = useState(false)
+  const [openDialogOpen, setOpenDialogOpen] = useState(false)
+  const [resources, setResources] = useState<Array<{ id: string; languageName: string; modelName: string; modelVersion: string }>>([])
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
+  const [loadingResources, setLoadingResources] = useState(false)
+  const [resourceError, setResourceError] = useState<string | null>(null)
 
   const openMenu = Boolean(menuAnchor) && activeMenu !== null
 
@@ -103,13 +108,33 @@ export default function Header({ userState, onSignOut, onSignIn, userName, userP
     setActiveMenu(null)
   }
 
-  const handleMenuOptionClick = (label: string) => {
+  const handleMenuOptionClick = async (label: string) => {
     handleCloseMenus()
     if (label === 'New...') {
       setLanguageName('')
       setModelName('')
       setModelVersion('')
       setNewDialogOpen(true)
+      return
+    }
+
+    if (label === 'Open...') {
+      setOpenDialogOpen(true)
+      setLoadingResources(true)
+      setResourceError(null)
+      try {
+        const response = await fetch('http://localhost:3000/resources')
+        if (!response.ok) {
+          throw new Error(response.statusText)
+        }
+        const list = await response.json()
+        setResources(list)
+        setSelectedResourceId(list.length ? list[0]?.id ?? null : null)
+      } catch (error: any) {
+        setResourceError(error.message || 'Failed to load resources')
+      } finally {
+        setLoadingResources(false)
+      }
     }
   }
 
@@ -229,6 +254,46 @@ export default function Header({ userState, onSignOut, onSignIn, userName, userP
         <Button onClick={() => setNewDialogOpen(false)} disabled={creating}>Cancel</Button>
         <Button onClick={createResource} variant="contained" disabled={creating || (!languageName && !modelName && !modelVersion)}>
           Create resource
+        </Button>
+      </DialogActions>
+    </Dialog>
+    <Dialog open={openDialogOpen} onClose={() => setOpenDialogOpen(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>Open Resource</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          {resourceError ? (
+            <Typography color="error">{resourceError}</Typography>
+          ) : loadingResources ? (
+            <Typography>Loading resources...</Typography>
+          ) : (
+            <List>
+              {resources.map((resource) => (
+                <ListItemButton
+                  key={resource.id}
+                  selected={selectedResourceId === resource.id}
+                  onClick={() => setSelectedResourceId(resource.id)}
+                >
+                  <ListItemText
+                    primary={resource.languageName}
+                    secondary={`${resource.modelName} • ${resource.modelVersion}`}
+                    primaryTypographyProps={{ fontWeight: 700 }}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          )}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpenDialogOpen(false)}>Cancel</Button>
+        <Button
+          onClick={() => {
+            setOpenDialogOpen(false)
+          }}
+          variant="contained"
+          disabled={!selectedResourceId}
+        >
+          Open resource
         </Button>
       </DialogActions>
     </Dialog>
