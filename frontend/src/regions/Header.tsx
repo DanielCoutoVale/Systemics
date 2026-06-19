@@ -9,7 +9,7 @@ type HeaderProps = {
   userPhotoUrl?: string
 }
 
-type TopMenuKey = 'file' | 'edit' | 'view' | 'go'
+type TopMenuKey = 'resource' | 'edit' | 'view' | 'go'
 
 const menuConfig: Array<{
   key: TopMenuKey
@@ -17,8 +17,8 @@ const menuConfig: Array<{
   options: Array<{ label: string; divider?: boolean }>
 }> = [
   {
-    key: 'file',
-    label: 'File',
+    key: 'resource',
+    label: 'Resource',
     options: [
       { label: 'New...' },
       { label: 'Open...' },
