@@ -61,20 +61,33 @@ function UserTabLayout() {
 function AppRoutes() {
   const [userState, setUserState] = useState<AuthState>('guest')
   const navigate = useNavigate()
+  const [userName, setUserName] = useState<string | null>(null)
+  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null)
 
-  const handleSignIn = () => {
+  const handleSignIn = (name?: string) => {
+    const finalName = name ?? 'demo'
     setUserState('user')
+    setUserName(finalName)
+    setUserPhotoUrl(`https://i.pravatar.cc/40?u=${encodeURIComponent(finalName)}`)
     navigate('/systems')
   }
 
   const handleSignOut = () => {
     setUserState('guest')
+    setUserName(null)
+    setUserPhotoUrl(null)
     navigate('/')
   }
 
   return (
     <>
-      <Header userState={userState} onSignOut={handleSignOut} onSignIn={() => navigate('/signin')} />
+      <Header
+        userState={userState}
+        onSignOut={handleSignOut}
+        onSignIn={() => navigate('/signin')}
+        userName={userName ?? undefined}
+        userPhotoUrl={userPhotoUrl ?? undefined}
+      />
 
       <Box component="main" sx={{ minHeight: 'calc(100vh - 160px)' }}>
         <Routes>

@@ -16,7 +16,7 @@ export function SignInMain({ onContinue, onCancel }: SignInProps) {
           <Button variant="outlined" onClick={onCancel}>
             Cancel
           </Button>
-          <Button variant="contained" size="large" onClick={onContinue}>
+          <Button variant="contained" size="large" onClick={() => onContinue()}>
             Sign In
           </Button>
         </Stack>

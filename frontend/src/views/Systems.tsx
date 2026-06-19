@@ -20,7 +20,7 @@ type SystemInput = ExpressionDto & {
 const systemsDto = new SystemsDto(1, 'Systemics', 'TypeScript', [
   new SystemDto(
     1,
-    'WeatherSystem.ts',
+    'TENSE',
     'Weather system for forecast logic',
     '/forecast',
     'forecastEngine',
@@ -38,7 +38,7 @@ const systemsDto = new SystemsDto(1, 'Systemics', 'TypeScript', [
   ),
   new SystemDto(
     2,
-    'TradeSystem.ts',
+    'MODE',
     'Commerce system for order processing',
     '/orders',
     'tradeEngine',
@@ -132,7 +132,7 @@ function renderRegionNode(node: RegionNode) {
                 📄 {system.name}
               </Typography>
               <Typography component="span" sx={{ color: '#94a3b8', fontSize: '0.78rem' }}>
-                {(system.inputs as SystemInput).expressions.length} expressions · {system.outputs.length} features
+                {(((system.inputs as SystemInput)?.expressions ?? [])).length} expressions · {(system.outputs ?? []).length} features
               </Typography>
             </Box>
           }
@@ -252,7 +252,7 @@ export function SystemsMain({
 const ${activeSystem.name.replace('.ts', '')} = {
   region: '${activeSystem.region}',
   expressions: [
-    ${((activeSystem.inputs as SystemInput).expressions as ExpressionDetailDto[])
+    ${(((activeSystem.inputs as SystemInput)?.expressions ?? []) as ExpressionDetailDto[])
       .map(
         (expr: ExpressionDetailDto) => `{
       id: '${expr.id}',
@@ -262,7 +262,7 @@ const ${activeSystem.name.replace('.ts', '')} = {
       )
       .join(',\n    ')}
   ],
-  features: [${activeSystem.outputs.map((feature) => `'${feature.name}'`).join(', ')}]
+  features: [${(activeSystem.outputs ?? []).map((feature) => `'${feature.name}'`).join(', ')}]
 }`}
             </Typography>
           ) : (
